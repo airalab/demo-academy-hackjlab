@@ -1,0 +1,55 @@
+/* + reset */
+* 
+{
+	margin:0; padding:0; outline: 0;
+    background:transparent;
+    vertical-align:baseline;
+
+    box-sizing: border-box;
+	-webkit-font-smoothing: antialiased;
+  	-moz-osx-font-smoothing: grayscale;
+}
+
+img {border: 0;}
+
+html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%; 
+    -ms-text-size-adjust: 100%; 
+}
+
+article,aside,details,figcaption,figure, footer,header,hgroup,menu,nav,section, main 
+{
+    display:block;
+}
+
+nav ul {list-style:none;}
+table {border-collapse:collapse; border-spacing:0;}
+input, select {vertical-align:middle;}
+
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+/* - reset */
+
+:root {
+  --color-dark: #222;
+  --color-yellow: #fffc00;
+  --color-green: greenyellow;
+  --color-red: rgb(255, 0, 55);
+
+  --font-family: 'Roboto Mono','Courier New', Courier, monospace;
+  --font-weight: bold;
+  --font-size: 1rem;
+}
+
+body *::selection {
+  background-color: var(--color-yellow);
+  color: var(--color-dark);
+}
+
+body {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight);
+  font-size: var(--font-size);
+  background-color: var(--color-dark);
+}
