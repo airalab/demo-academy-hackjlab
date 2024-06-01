@@ -12,6 +12,7 @@
   "dependencies": {
     "@polkadot/api": "^11.2.1",
     "ed2curve": "^0.3.0",
+    "fflate": "^0.8.2",
     "jsonrepair": "^3.8.0",
     "robonomics-interface": "^0.3.2",
     "vue": "^3.4.21"
