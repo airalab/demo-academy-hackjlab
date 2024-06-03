@@ -8,129 +8,127 @@
         </div>
 
         <div class="inside">
-          <div class="boxinfo" v-if="appstatus !== 'signedin'">
+          <!-- <video style="width:300px;height:150px;" controls>
+            <source src="./assets/images/video2.mp4" type="video/mp4"/>
+          </video> -->
 
-              <div class="flexline">
-                <Loader v-if="appstatus === 'waiting'" />
-                <IconCheck v-else class="icon" />
-                <div class="typeanimated typeanimated-1">Connecting to Robonomics parachain</div>
-              </div>
+          <template v-if="appstatus === 'notstarted'">
+            <a href="javascript:;" class="button" @click.prevent="start">Start</a>
+          </template>
 
-              <div class="flexline" v-if="appstatus !== 'waiting'" >
-                <Loader v-if="appstatus === 'users got'" />
-                <IconCheck v-else class="icon" />
-                <div class="typeanimated typeanimated-4">Retrieving encoded data</div>
-              </div>
+          <template v-if="appstatus !== 'notstarted'">
+        
+            <div class="boxinfo" v-if="appstatus !== 'signedin'">
 
-              <template v-if="appstatus === 'signin ready' || appstatus === 'signin process'">
+                <div class="flexline">
+                  <Loader v-if="appstatus === 'waiting'" />
+                  <IconCheck v-else class="icon" />
+                  <div class="typeanimated typeanimated-1">Connecting to Robonomics parachain</div>
+                </div>
 
-                  <template v-if="!users || users?.length === 0">
-                    <div class="flexline">
-                      <Loader />
-                      <div class="typeanimated typeanimated-2">Add your address in the Discord bot</div>
-                    </div>
+                <div class="flexline" v-if="appstatus !== 'waiting'" >
+                  <Loader v-if="appstatus === 'users got'" />
+                  <IconCheck v-else class="icon" />
+                  <div class="typeanimated typeanimated-4">Retrieving encoded data</div>
+                </div>
 
-                    <div class="plaintext">
-                      <p>What address you should add:</p>
-                      <ul aria-label="What address you should add">
-                        <li>Polkadot address in ED25519 format</li>
-                        <li>No tokens required</li>
-                      </ul>
-                    </div>
-                  </template>
+                <template v-if="appstatus === 'signin ready' || appstatus === 'signin process'">
 
-                  <template v-if="appstatus !== 'signedin' && users && users?.length > 0">
-                    <div class="flexline">
-                      <Loader />
-                      <div class="typeanimated typeanimated-3">Decrypt with your user:</div>
-                    </div>
-
-                    <form @submit.prevent="signin">
-                      <select v-model="user">
-                          <option v-for="u in users" :key="u" :value="u">{{shortaddress(u)}}</option>
-                      </select>
-
-                      <div class="inputpassword">
-                        <input :type="typepassword" v-model="userpassword" placeholder="Enter the mnemonic phrase (12 words)" />
-                        <svg @click="togpassword()" class="inputpassword-eye" aria-label="Toggle password visibility" role="button" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                          viewBox="0 0 8.1 8.7" style="enable-background:new 0 0 8.1 8.7;" xml:space="preserve">
-                          <g>
-                            <path d="M2.1,6.6c0.1-0.2,0-0.4-0.2-0.5C1.2,5.6,0.8,5.1,0.8,4.6c0-0.5,0.3-0.9,0.9-1.3c0,0,0.1,0,0.1-0.1c0,0,0,0,0,0
-                              c0.6-0.3,1.4-0.5,2.2-0.5c0,0,0,0,0,0c0,0,0,0,0,0c0.5,0,0.9,0.1,1.3,0.2c0.2,0.1,0.4-0.1,0.5-0.3C6,2.3,5.8,2.1,5.6,2.1
-                              C5.2,2,4.9,1.9,4.5,1.9V0.4C4.5,0.2,4.3,0,4.1,0S3.7,0.2,3.7,0.4v1.5C3,1.9,2.3,2.1,1.8,2.3L1.2,1.1C1.1,1,0.9,0.9,0.7,1
-                              C0.5,1.1,0.4,1.3,0.5,1.5l0.6,1.2C0.5,3.2,0,3.8,0,4.6c0,0.9,0.7,1.7,1.6,2.2C1.8,6.8,2,6.7,2.1,6.6z"/>
-                            <path d="M4.1,4c0.1,0,0.2,0,0.3,0.1C4.5,4.2,4.8,4.2,4.9,4C5,3.8,4.9,3.6,4.8,3.4C4.6,3.3,4.3,3.2,4.1,3.2h0C3.6,3.2,3.1,3.5,2.9,4
-                              C2.7,4.4,2.7,4.9,3,5.3c0.1,0.2,0.4,0.2,0.5,0.1c0.2-0.1,0.2-0.4,0.1-0.5c-0.1-0.2-0.1-0.4,0-0.6C3.7,4.1,3.9,4,4.1,4z"/>
-                            <path d="M8.1,4.5l-0.4,0h0L8.1,4.5c0-0.7-0.4-1.3-0.9-1.7L8,2.1c0.1-0.2,0.1-0.4,0-0.6c-0.2-0.1-0.4-0.1-0.6,0L6.4,2.7c0,0,0,0,0,0
-                              L4.7,4.5l0,0L5,4.8l0,0L4.7,4.5L4.1,5.2l0,0L2.8,6.5L1.5,8c-0.1,0.2-0.1,0.4,0,0.6c0.2,0.1,0.4,0.1,0.6,0l1.2-1.3
-                              c0.3,0,0.5,0.1,0.8,0.1v0c0,0,0,0,0,0c0,0,0,0,0,0v0c1.1,0,2.1-0.3,2.8-0.7C7.6,6.1,8.1,5.4,8.1,4.5C8.1,4.6,8.1,4.5,8.1,4.5z
-                              M6.5,5.9C5.9,6.2,5,6.5,4.1,6.5h0c0,0-0.1,0-0.1,0l0.7-0.8l0,0L4.4,5.4l0,0l0.3,0.3l0.6-0.6l0,0l1.5-1.6c0.3,0.3,0.6,0.7,0.6,1.1
-                              C7.3,5,7.1,5.5,6.5,5.9z"/>
-                          </g>
-                        </svg>
+                    <template v-if="!users || users?.length === 0">
+                      <div class="flexline">
+                        <Loader />
+                        <div class="typeanimated typeanimated-2">Add your address in the Discord bot</div>
                       </div>
 
-                      <input type="submit" value="Hack" />
-
-                      <div class="error" v-if="signerror">{{signerror}}</div>
-
                       <div class="plaintext">
-                        <p>If you are not in the list, add your address in the Discord bot. What address you should add:</p>
+                        <p>What address you should add:</p>
                         <ul aria-label="What address you should add">
                           <li>Polkadot address in ED25519 format</li>
                           <li>No tokens required</li>
                         </ul>
                       </div>
-                    </form>
+                    </template>
 
+                    <template v-if="appstatus !== 'signedin' && users && users?.length > 0">
+                      <div class="flexline">
+                        <Loader />
+                        <div class="typeanimated typeanimated-3">Decrypt with your user:</div>
+                      </div>
+
+                      <form @submit.prevent="signin">
+                        <select v-model="user">
+                            <option v-for="u in users" :key="u" :value="u">{{shortaddress(u)}}</option>
+                        </select>
+
+                        <div class="inputpassword">
+                          <input :type="typepassword" v-model="userpassword" placeholder="Enter the mnemonic phrase (12 words)" />
+                          <IconEyeCrossed @click="togpassword()" class="inputpassword-eye" />
+                        </div>
+
+                        <input type="submit" value="Hack" />
+
+                        <div class="error" v-if="signerror">{{signerror}}</div>
+
+                        <div class="plaintext">
+                          <p>If you are not in the list, add your address in the Discord bot. What address you should add:</p>
+                          <ul aria-label="What address you should add">
+                            <li>Polkadot address in ED25519 format</li>
+                            <li>No tokens required</li>
+                          </ul>
+                        </div>
+                      </form>
+
+                    </template>
                   </template>
-                </template>
 
-          </div>
+            </div>
 
-          <div class="boxactions" v-if="appstatus === 'signedin' && datalog && datavideo">
+            <div class="boxactions" v-if="appstatus === 'signedin' && datalog && datavideo">
 
-              <div class="map">
-                <img src="./assets/images/map.png" class="mapimg" alt="Room plan of the Johnny's laboratory" />
-                <template v-if="points?.length > 0">
-                  <!-- <details v-for="(p,i) in points" :key="i" :style="'--x:' + p.x +'; --y:' + p.y + ';'" class="mappoint"> -->
-                  <details v-for="(p,i) in points" :key="i" :style="'top:' + p.x +'px; left:' + p.y + 'px;'" class="mappoint">
-                    <summary></summary>
-                    {{p.word}}
-                  </details>
-                </template>
+                <div class="map">
+                  <!-- <img src="./assets/images/johnny_lab_map_8.png" class="mapimg" alt="Room plan of the Johnny's laboratory" /> -->
+                  <img src="./assets/images/map.png" class="mapimg" alt="Room plan of the Johnny's laboratory" />
+                  <template v-if="points?.length > 0">
+                    <details 
+                    v-for="(p,i) in points" :key="i" 
+                    :style="'--x:' + p.x +'px; --y:' + p.y + 'px; --charlength:' + p.word.length + 'ch'"  
+                    class="mappoint"
+                    tabindex="0">
+                      <summary><IconRobot /></summary>
+                      <div class="mappoint-popup">{{p.word}}</div>
+                    </details>
+                  </template>
+                </div>
+
+                <div class="mapinfo">
+                  <section>
+                    <a :href="datavideo" target="_blank" class="button" download>Download video</a>
+                    <p class="textsmall">You need this video to restore the sequence of words in the phrase.</p>
+                  </section>
+
+                  <section class="textsmall">
+                    <h3>What's next:</h3>
+                    <p>1. Save all words from points on the map.</p>
+                    <p>2. Watch downloaded video to find out the order for the words.</p>
+                    <p>3. Get access to Polkadot account with the phrase you got. Now you can transfer all tokens to other (your save personal) account. The fastest hacker in the session wins.</p>
+                  </section>
+
+                  <section class="textsmall">
+                    <h3>Did't win?</h3>
+                    <p>Within a week we have sessions two times each day: day & night session. Every session you can make new attempt to hack Johnny's lab and get tokens.</p>
+                  </section>
+                </div>
               </div>
-
-              <div class="mapinfo">
-                <section>
-                  <a :href="datavideo" target="_blank" class="button" download>Download video</a>
-                  <p class="textsmall">You need this video to restore the sequence of words in the phrase.</p>
-                </section>
-
-                <section class="textsmall">
-                  <h3>What's next:</h3>
-                  <p>1. Save all words from points on the map.</p>
-                  <p>2. Watch downloaded video to find out the order for the words.</p>
-                  <p>3. Get access to Polkadot account with the phrase you got. Now you can transfer all tokens to other (your save personal) account. The fastest hacker in the session wins.</p>
-                </section>
-
-                <section class="textsmall">
-                  <h3>Did't win?</h3>
-                  <p>Within a week we have sessions two times each day: day & night session. Every session you can make new attempt to hack Johnny's lab and get tokens.</p>
-                </section>
-              </div>
-
+            </template>
           </div>
-
-        </div>
-    </div>
-    <div class="lock">
-        <IconLockLocked v-if="appstatus !== 'signedin'" />
-        <template v-else>
-          <IconLockUnlocked />
-          {{shortaddress(user)}}
-        </template>
-    </div>
+      </div>
+      <div class="lock">
+          <IconLockLocked v-if="appstatus !== 'signedin'" />
+          <template v-else>
+            <IconLockUnlocked />
+            {{shortaddress(user)}}
+          </template>
+      </div>
     <img class="floor" src="./assets/images/jlab-room.png" aria-hidden="true" />
   </div>
 </template>
@@ -142,9 +140,11 @@ import Loader from './components/icons/Loader.vue';
 import IconLockLocked from './components/icons/LockLocked.vue';
 import IconLockUnlocked from './components/icons/LockUnlocked.vue';
 import IconCheck from './components/icons/Check.vue';
+import IconRobot from './components/icons/Robot.vue';
+import IconEyeCrossed from './components/icons/EyeCrossed.vue';
 
-/* possible values: 'waiting' 'users got' 'signin ready' 'signin process' 'signedin' */
-const appstatus = ref('waiting');
+/* possible values: 'notstarted, 'waiting' 'users got' 'signin ready' 'signin process' 'signedin' */
+const appstatus = ref('notstarted');
 const signerror = ref(null);
 
 /* + datalog */
@@ -186,21 +186,18 @@ const togpassword = () => {
 const getpoints = () => {
 
   const resolution = 0.01;
-
-  /* Doesn't work properly */
   const origin = [-3.01, -1.17];
   const mapheight = 378;
-  let startpoint = [(-1 * origin[0])/resolution, (-1 * mapheight - origin[1]) / resolution];
-  console.log('startpoint',startpoint)
 
-  /* Dummy */
-  startpoint = [301, -37.7];
+  let startpoint = [(-1 * origin[0])/resolution, -1 * mapheight - origin[1] / resolution];
+  console.log('startpoint',startpoint);
+
   points.value = [];
 
   datalog.value.forEach( i => {
     points.value.push({
-      x: startpoint[0] + i.robot_position_x / resolution,
-      y: -1 * (startpoint[1] + i.robot_position_y / resolution),
+      x: Math.abs(startpoint[0] + i.robot_position_x / resolution),
+      y: Math.abs(-1 * (startpoint[1] + i.robot_position_y / resolution)),
       word: i.word
     });
   });
@@ -271,51 +268,62 @@ const signin = () => {
   }
 }
 
-onMounted( async () => {
+const start = async () => {
 
-  /* + Get users */
-  const isOnce = RobonomicsProvider.isReady.value;
+    appstatus.value = 'waiting';
 
-  watch(
-    RobonomicsProvider.isReady,
-    async (isReady, _, stopWatch) => {
-      if (isReady) {
-        if (!isOnce) {
-          stopWatch();
-        }
-        devices.loadDevices();
-        try {
-          jsonData.value = await getData(
-            RobonomicsProvider.instance.value,
-            controller,
-            gateway.value
-          );
+    const isOnce = RobonomicsProvider.isReady.value;
 
-          if (jsonData.value) {
-            appstatus.value = 'signin ready';
+    watch(
+      RobonomicsProvider.isReady,
+      async (isReady, _, stopWatch) => {
+        if (isReady) {
+          if (!isOnce) {
+            stopWatch();
           }
-        } catch (error) {
-          console.log(error);
+    
+          devices.loadDevices();
+          try {
+            
+            jsonData.value = await getData(
+              RobonomicsProvider.instance.value,
+              controller,
+              gateway.value
+            );
+
+            if (jsonData.value) {
+              appstatus.value = 'signin ready';
+            }
+          } catch (error) {
+            console.log(error);
+          }
         }
+      },
+      { immediate: true, once: isOnce }
+    );
+
+    watch(devices.devices, u => {
+      appstatus.value = 'users got';
+      users.value = u;
+
+      if (u.length > 0) {
+        user.value = u[0];
       }
-    },
-    { immediate: true, once: isOnce }
-  );
+    });
 
-  watch(devices.devices, u => {
-    appstatus.value = 'users got';
-    users.value = u;
+}
 
-    if (u.length > 0) {
-      user.value = u[0];
-    }
-  });
-  /* - Get users */
+onMounted( () => {
+  document.body.onclick = (e) => {
 
-  // console.log('jsonData.value',jsonData.value)
-  // watch(jsonData, () => {
-  //   console.log('jsonData.value',jsonData.value)
-  // })
+      const current = e.target.closest('.mappoint[tabindex="0"]'); //save clicked element to detect if it is our current detail
+      document.body.querySelectorAll('.mappoint[tabindex="0"]')
+          .forEach((e) => {
+              if(e !== current){ //we need this condition not to break details behavior
+                e.open = false
+              }
+      })
+  }
 
 })
 </script>
@@ -323,7 +331,7 @@ onMounted( async () => {
 <style scoped>
   .demo {
     background-color: var(--color-dark);
-    height: 100vh;
+    min-height: 100vh;
     overflow: hidden;
     width: 100vw;
     position: relative;
@@ -469,6 +477,8 @@ onMounted( async () => {
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 2px;
+    display: inline-block;
+    width: auto;
   }
 
   select {
@@ -560,12 +570,6 @@ onMounted( async () => {
 
   /* - typinh */
 
-  @media screen and (max-width: 800px) {
-      .jlab {
-          grid-template-columns: 1fr;
-      }
-  }
-
 
   /* + map & video */
   .boxactions {
@@ -578,6 +582,7 @@ onMounted( async () => {
     width: 459px;
     height: 378px;
     position: relative;
+    margin: 0 auto;
   }
 
   .map .mapimg {
@@ -586,16 +591,12 @@ onMounted( async () => {
   }
 
   .mappoint {
-    /* --x: 0;
-    --y: 0; */
-    --width: 6px;
+    --x: 0;
+    --y: 0;
+    --width: 1.6rem;
     position: absolute;
-    /* top: calc(var(--x) - var(--width)/2);
-    left: calc(var(--y) - var(--width)/2); */
-    background: var(--color-yellow);
-    width: var(--width);
-    height: var(--width);
-    border-radius: var(--width);
+    left: calc(var(--x) - var(--width)/2);
+    top: calc(var(--y) - var(--width)/2);
   }
 
   .mappoint summary::-webkit-details-marker,
@@ -603,5 +604,48 @@ onMounted( async () => {
     content: "";
     display: none; 
   }
+
+  .mappoint summary {
+    cursor: pointer;
+    transform-origin: 50% 50%;
+    fill: var(--color-yellow);
+  }
+
+  .mappoint summary svg {
+    width: var(--width);
+  }
+
+  .mappoint summary:hover {
+    transform: scale(1.4);
+    transition: 0.2s ease-in-out all;
+    fill: #fff;
+  }
+
+  .mappoint[open] summary {
+    transform: scale(1.4);
+    fill: #fff;
+  }
+
+  .mapinfo {
+    max-width: 700px;
+  }
+
+  .mappoint-popup {
+    background-color: #fff;
+    border: 1px solid var(--color-yellow);
+    color: var(--color-dark);
+    padding: 0.5rem;
+    border-radius: 4px;
+    position: absolute;
+    top: -3rem;
+    left: calc(50% - var(--charlength)/2 - 0.5rem);
+    z-index: 100;
+  }
   /* - map & video */
+
+  @media screen and (max-width: 800px) {
+      .boxactions {
+          grid-template-columns: 1fr;
+      }
+  }
 </style>
