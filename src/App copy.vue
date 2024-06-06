@@ -1,17 +1,14 @@
 <template>
   <div class="demo">
-    <header>
-        <div>
-          <img class="appicon" src="./assets/images/robotdark.png" aria-hidden="true" />
-          <div v-if="sessionactive" class="session">Now active: {{sessionactive}}</div>
+    <div class="content">
+
+      <img class="appicon" src="./assets/images/tboticon.png" aria-hidden="true" />
+        <div class="appinfo">
+            <div v-if="sessionactive" class="session">Now active: {{sessionactive}}</div>
+            <a class="discord" href="https://discord.com/channels/803947358492557312/1245395009964871772" target="_blank">Discord bot assistant</a>
         </div>
 
-        <div>
-          <a class="discord" href="https://discord.com/channels/803947358492557312/1245395009964871772" target="_blank">Discord <span class="hidetext">bot assistant</span></a>
-        </div>
-    </header>
-
-    <div class="inside">
+        <div class="inside">
 
           <template v-if="appstatus === 'notstarted'">
             <a href="javascript:;" class="button" @click.prevent="start">Start</a>
@@ -87,25 +84,46 @@
             <div class="boxactions" v-if="appstatus === 'signedin' && datalog && datavideo">
 
               <div>
-                <div class="window">
-                  <h2 class="window-title">Map of the room</h2>
+                <div>
+                  <video controls>
+                    <source :src="datavideo" type="video/mp4"/>
+                  </video>
+                  <!-- <a :href="datavideo" target="_blank" download>Download video</a> -->
 
-                  <div class="window-content">
-                    <img src="./assets/images/map-2.png" class="mapimg" alt="Room plan of the Johnny's laboratory" />
-                    <!-- <div class="map">
-                      <img src="./assets/images/map.png" class="mapimg" alt="Room plan of the Johnny's laboratory" />
-                      <template v-if="points?.length > 0">
-                        <div 
-                        v-for="(p,i) in points" :key="i" 
-                        :style="'--x:' + p.x +'px; --y:' + p.y + 'px;'"  
-                        class="mappoint">{{i + 1}}</div>
-                      </template>
-                    </div> -->
-                  </div>
-                  
+                  <!-- <section class="pointsprint" v-if="points">
+                    <div v-for="(p, i) in points" :key="i" :style="'--width: ' + (p.word.length + 3) + 'ch; --delay:' + i + '; --time:' + (p.word.length + 3)">
+                      <img aria-hidden="true" src="./assets/images/robotlined.png" />
+                      {{p.word}}
+                    </div>
+                  </section> -->
                 </div>
 
-                <section class="textsmall">
+                <div class="map">
+                  <img src="./assets/images/map.png" class="mapimg" alt="Room plan of the Johnny's laboratory" />
+                  <template v-if="points?.length > 0">
+                    <div 
+                    v-for="(p,i) in points" :key="i" 
+                    :style="'--x:' + p.x +'px; --y:' + p.y + 'px; --charlength:' + p.word.length + 'ch'"  
+                    class="mappoint"><IconRobot /></div>
+                  </template>
+                </div>
+              </div>
+
+              <div v-if="datavideo">
+
+                  <section class="textsmall">
+                    <h3>Here is what robot found in Johnny's lab</h3>
+                    <p>Look at the video and re-order words according to numbers.</p>
+                  </section>
+
+                  <section class="pointsprint" v-if="points">
+                    <div v-for="(p, i) in points" :key="i" :style="'--width: ' + (p.word.length + 3) + 'ch; --delay:' + i + '; --time:' + (p.word.length + 3)">
+                      <img aria-hidden="true" src="./assets/images/robotlined.png" />
+                      {{p.word}}
+                    </div>
+                  </section>
+
+                  <section class="textsmall">
                     <h3>What's next?</h3>
                     <p>First who gathered mnemonic phrase and transferred tokens to safe account wins.</p>
                   </section>
@@ -116,41 +134,21 @@
                   </section>
               </div>
 
-              <div>
-                <div class="window">
-                  <h2 class="window-title">Video from the robot</h2>
-
-                  <div class="window-content">
-                    <p class="textsmall">Look at the video and re-order words according to numbers.</p>
-
-                    <video controls v-if="datavideo">
-                      <source :src="datavideo" type="video/mp4"/>
-                    </video>
-                  </div>
-                </div>
-
-                <section class="pointsprint" v-if="words">
-                  <div v-for="(word, i) in words" :key="i" :style="'--width: ' + (word.length + 3) + 'ch; --delay:' + i + '; --time:' + (word.length + 3)">
-                    <img aria-hidden="true" src="./assets/images/robotlined.png" />
-                    {{word}}
-                  </div>
-                </section>
-              </div>
+              
             </div>
 
           </template>
         </div>
-
-    <div class="lock">
-        <IconLockLocked v-if="appstatus !== 'signedin'" />
-        <template v-else>
-          <IconLockUnlocked />
-          {{shortaddress(user)}}
-        </template>
-    </div>
+      </div>
+      <div class="lock">
+          <IconLockLocked v-if="appstatus !== 'signedin'" />
+          <template v-else>
+            <IconLockUnlocked />
+            {{shortaddress(user)}}
+          </template>
+      </div>
     <img class="floor" src="./assets/images/jlab-room.png" aria-hidden="true" />
   </div>
-
 </template>
 
 <script setup>
@@ -185,10 +183,9 @@ const gateway = "https://ipfs.url.today/ipfs/";
 // const gateway = ["https://ipfs.url.today/ipfs/", "https://ipfs.io/ipfs/", "https://gateway.pinata.cloud/ipfs/"];
 const users = ref([]);
 const user = ref(null);
-const datavideo = ref(null);
 const datalog = ref(null);
-// const points = ref([]);
-const words = ref([]);
+const datavideo = ref(null);
+const points = ref([]);
 /* - datalog */
 
 /* + mnemonic */
@@ -205,25 +202,27 @@ const togpassword = () => {
 }
 /* - mnemonic */
 
-// const getpoints = () => {
+const getpoints = () => {
 
-//   const resolution = 0.01;
-//   const origin = [-3.01, -1.17];
-//   const mapheight = 378;
+  const resolution = 0.01;
+  const origin = [-3.01, -1.17];
+  const mapheight = 378;
 
-//   let startpoint = [(-1 * origin[0])/resolution, -1 * mapheight - origin[1] / resolution];
-//   points.value = [];
+  let startpoint = [(-1 * origin[0])/resolution, -1 * mapheight - origin[1] / resolution];
+  console.log('startpoint',startpoint);
 
-//   datalog.value.points.forEach( i => {
-//     console.log('point', i)
-//     points.value.push({
-//       x: Math.abs(startpoint[0] + i[0] / resolution),
-//       y: Math.abs(-1 * (startpoint[1] + i[1] / resolution))
-//     });
-//   });
+  points.value = [];
 
-//   console.log('points.value', points.value)
-// }
+  datalog.value.forEach( i => {
+    points.value.push({
+      x: Math.abs(startpoint[0] + i.robot_position_x / resolution),
+      y: Math.abs(-1 * (startpoint[1] + i.robot_position_y / resolution)),
+      word: i.word
+    });
+  });
+
+  console.log('points.value', points.value)
+}
 
 const sessionactive = computed( () => {
   const now = new Date(Date.now()).getHours();
@@ -232,11 +231,10 @@ const sessionactive = computed( () => {
       const today = new Date(Date.now()).toLocaleDateString();
       return 'Day session ' + today;
   } else {
-      let session = new Date();
-      if(now > 21) {
-        session.setDate(new Date().getDate() + 1);
-      }
-      return 'Night session ' + session.toLocaleDateString();
+      const date = new Date();
+      let yesterday = new Date(date.getTime());
+      yesterday.setDate(date.getDate() - 1);
+      return 'Night session ' + new Date(yesterday).toLocaleDateString();
   }
 });
 
@@ -275,8 +273,7 @@ const signin = () => {
     datalog.value = JSON.parse(jsonrepair(u8aToString(unzipped["data.json"])));
 
     if(datalog.value) {
-      // getpoints();
-      words.value = datalog.value.words
+      getpoints();
     }
 
     const videosource = unzipped["johnny_lab_record.mp4"];
@@ -354,10 +351,10 @@ onMounted( () => {
   .demo {
     background-color: var(--color-dark);
     min-height: 100vh;
+    overflow: hidden;
     width: 100vw;
     position: relative;
     color: var(--color-green);
-    border: 2px solid var(--color-green);
   }
 
   .floor {
@@ -373,7 +370,7 @@ onMounted( () => {
       border-radius: 5px;
       color: #fff;
       font-weight: 900;
-      padding: 0.2rem 0.8rem;
+      padding: 0.4rem 0.8rem;
       text-decoration: none;
   }
 
@@ -382,32 +379,29 @@ onMounted( () => {
       color: #fff;
   }
 
-  header {
-    align-items: center;
-    background: var(--color-green);
-    color: var(--color-dark);
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 1rem;
-    position: relative;
-    z-index: 2;
+  .appinfo {
+      max-width: 320px;
+      position: absolute;
+      right: 1rem;
+      text-align: right;
+      top: 1rem;
+      padding-left: 100px;
+      box-sizing: content-box;
   }
 
-  header .appicon {
-    display: block;
-    width: 20px;
+  .appinfo > *:not(:last-child) {
+      margin-bottom: 0.8rem;
   }
 
-  header > div:first-child {
-    align-items: center;
-    display: flex;
-    gap: 1rem;
+  .appicon {
+      left: 1rem;
+      position: absolute;
+      top: 0.5rem;
+      width: 80px;
   }
 
   .inside {
-      padding: 2rem 1rem 80px;
-      position: relative;
-      z-index: 1;
+      padding: 150px 1rem 80px;
   }
 
   .inside a {
@@ -563,6 +557,15 @@ onMounted( () => {
       display: flex;
   }
 
+  /* .typeanimated::after {
+      content: "";
+      display: block;
+      height: 1em;
+      width: 2px;
+      background-color: var(--color-green);
+      animation: blink .95s step-end infinite alternate;
+  } */
+
   .typeanimated-1 {
       width: 34ch;
       animation: typing 1s steps(34);
@@ -582,6 +585,13 @@ onMounted( () => {
     width: 23ch;
     animation: typing 2s steps(23);
   }
+
+  /* @keyframes blink {
+    50% {
+      background-color: transparent;
+    }
+  } */
+
   /* - typinh */
 
 
@@ -589,19 +599,31 @@ onMounted( () => {
   .boxactions {
     display: grid;
     gap: 2rem;
-    grid-template-columns: 459px auto;
+    /* grid-template-columns: auto auto calc(459px/2); */
+    grid-template-rows: auto auto;
+  }
+
+  .boxactions > div:first-child {
+    display: grid;
+    grid-template-columns: 1fr 459px;
+    gap: 2rem;
+    /* display: flex;
+    gap: 2rem; */
   }
 
   video {
-    max-width: 600px;
+    max-width: 800px;
     width: 100%;
   }
-
   .boxactions video:not(:last-child) {
     margin-bottom: 1rem;
   }
 
   .pointsprint {
+    /* display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between; */
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     justify-items: start;
@@ -638,59 +660,31 @@ onMounted( () => {
     animation-delay: calc(var(--delay) * 2s);
   }
 
-  /* .map {
+  .map {
     width: 459px;
     height: 378px;
     position: relative;
     margin: 0 auto;
-  } */
+  }
 
-  .mapimg {
+  .map .mapimg {
     display: block;
     max-width: 100%;
   }
 
-  /* .mappoint {
+  .mappoint {
     --x: 0;
     --y: 0;
-    --width: 1.2rem;
-    align-items: center;
-    background: var(--color-yellow);
-    border-radius: var(--width);
-    border: 1px solid var(--color-dark);
-    box-sizing: border-box;
-    color: var(--color-dark);
-    display: flex;
-    font-size: 0.8em;
-    font-weight: bold;
-    height: var(--width);
-    justify-content: center;
-    left: calc(var(--x) - var(--width)/2);
-    padding: 0.3rem;
+    --width: 1.6rem;
     position: absolute;
+    left: calc(var(--x) - var(--width)/2);
     top: calc(var(--y) - var(--width)/2);
     transform-origin: 50% 50%;
-    width: var(--width);
   }
 
   .mappoint svg {
     width: var(--width);
     fill: var(--color-yellow);
-  } */
-
-  .window {
-    border: 2px solid var(--color-green);
-  }
-
-  .window-title {
-    background: var(--color-green);
-    color: var(--color-dark);
-    font-size: 14px;
-    font-weight: 400;
-  }
-
-  .window-content {
-    padding: 2rem;
   }
 
   /* - main part */
@@ -734,26 +728,12 @@ onMounted( () => {
   }
 
   @media screen and (max-width: 900px) {
-    .boxactions {
-        grid-template-columns: 1fr;
+      .boxactions {
+          grid-template-columns: 1fr;
+      }
+
+      .pointsprint {
+        grid-template-columns: repeat(3, 1fr);
     }
-
-    .boxactions > div:last-child {
-      order: 0;
-    }
-
-    .boxactions > div:first-child {
-      order: 1;
-    }
-
-    .pointsprint {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    video { max-width: 90vw; }
-  }
-
-  @media screen and (max-width: 700px) {
-    .hidetext { display: none; }
   }
 </style>

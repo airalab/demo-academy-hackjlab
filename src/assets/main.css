@@ -34,7 +34,7 @@ sub { vertical-align: sub; }
 :root {
   --color-dark: #222;
   --color-yellow: #fffc00;
-  --color-green: greenyellow;
+  --color-green: #adff2f;
   --color-red: rgb(255, 0, 55);
 
   --font-family: 'Roboto Mono','Courier New', Courier, monospace;
