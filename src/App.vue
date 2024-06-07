@@ -117,18 +117,6 @@
               </div>
 
               <div>
-                <div class="window">
-                  <h2 class="window-title">Video from the robot</h2>
-
-                  <div class="window-content">
-                    <p class="textsmall">Look at the video and re-order words according to numbers.</p>
-
-                    <video controls v-if="datavideo">
-                      <source :src="datavideo" type="video/mp4"/>
-                    </video>
-                  </div>
-                </div>
-
                 <section v-if="words">
                   <div class="window">
                     <h2 class="window-title">Words in the order robot met them</h2>
@@ -143,6 +131,18 @@
                   </div>
                 </section>
                 
+                <div class="window">
+                  <h2 class="window-title">Video from the robot</h2>
+
+                  <div class="window-content">
+                    <p class="textsmall">Look at the video and re-order words according to numbers.</p>
+
+                    <video controls v-if="datavideo">
+                      <source :src="datavideo" type="video/mp4"/>
+                    </video>
+                  </div>
+                </div>
+
               </div>
             </div>
 
