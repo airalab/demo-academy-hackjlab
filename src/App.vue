@@ -129,12 +129,20 @@
                   </div>
                 </div>
 
-                <section class="pointsprint" v-if="words">
-                  <div v-for="(word, i) in words" :key="i" :style="'--width: ' + (word.length + 3) + 'ch; --delay:' + i + '; --time:' + (word.length + 3)">
-                    <img aria-hidden="true" src="./assets/images/robotlined.png" />
-                    {{word}}
+                <section v-if="words">
+                  <div class="window">
+                    <h2 class="window-title">Words in the order robot met them</h2>
+                    <div class="window-content">
+                      <div class="pointsprint">
+                        <div v-for="(word, i) in words" :key="i" :style="'--width: ' + (word.length + 3) + 'ch; --delay:' + i + '; --time:' + (word.length + 3)">
+                          <img aria-hidden="true" src="./assets/images/robotlined.png" />
+                          {{word}}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </section>
+                
               </div>
             </div>
 
@@ -589,11 +597,11 @@ onMounted( () => {
   .boxactions {
     display: grid;
     gap: 2rem;
-    grid-template-columns: 459px auto;
+    grid-template-columns: minmax(min-content, 500px) minmax(min-content, 800px);
   }
 
   video {
-    max-width: 600px;
+    max-width: 800px;
     width: 100%;
   }
 
@@ -751,6 +759,10 @@ onMounted( () => {
     }
 
     video { max-width: 90vw; }
+
+    .window-content {
+      padding: 1rem;
+    }
   }
 
   @media screen and (max-width: 700px) {
