@@ -7,6 +7,7 @@
         </div>
 
         <div>
+          <base target="_blank">
           <a class="discord" href="https://discord.com/channels/803947358492557312/1245395009964871772" target="_blank">Discord <span class="hidetext">bot assistant</span></a>
         </div>
     </header>
@@ -130,7 +131,7 @@
                     </div>
                   </div>
                 </section>
-                
+
                 <div class="window">
                   <h2 class="window-title">Video from the robot</h2>
 
@@ -189,7 +190,7 @@ const controller = "4HfUX9Ex5KJZNf3ozDCSDwTY4xJ2zSt1zr15PrWuv6M4Z56z";
 const RobonomicsProvider = inject("RobonomicsProvider");
 const devices = useDevices(owner);
 const jsonData = ref();
-const gateway = "https://ipfs.url.today/ipfs/";
+const gateway = "https://johnny_lab.mypinata.cloud/ipfs";
 // const gateway = ["https://ipfs.url.today/ipfs/", "https://ipfs.io/ipfs/", "https://gateway.pinata.cloud/ipfs/"];
 const users = ref([]);
 const user = ref(null);
