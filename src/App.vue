@@ -18,7 +18,9 @@
     <div class="inside">
 
           <template v-if="appstatus === 'notstarted'">
-            <a href="javascript:;" class="button" @click.prevent="start">Start</a>
+            <a v-if="sessionstatus === 'game'" href="javascript:;" class="button" @click.prevent="start">Start</a>
+            <p v-if="sessionstatus === 'registration'">Register your Polkadot address (this should be in ED25519 format) in Discord bot: https://discord.com/channels/803947358492557312/1245395009964871772</p>
+            <p v-if="sessionstatus === 'robotworks'">Wait for robot. He usually is exploring Johnny's lab within 15 minutes.</p>
           </template>
 
           <template v-if="appstatus !== 'notstarted'">
@@ -132,9 +134,17 @@
                   <div class="window-content">
                     <p class="textsmall">Look at the video and re-order words according to numbers.</p>
 
-                    <video controls v-if="datavideo">
-                      <source :src="datavideo" type="video/mp4"/>
-                    </video>
+                    <div class="videocontainer" v-if="datavideo">
+                      <video muted id="video">
+                        <source :src="datavideo" type="video/mp4"/>
+                      </video>
+                      <a href="javascript:;" class="videocontrol" @click.prevent="contolvideo">
+                        <IconPlay v-if="videoplay" />
+                        <IconPause v-else />
+                      </a>
+                    </div>
+
+                    
                   </div>
                 </div>
 
@@ -164,11 +174,14 @@ import IconLockLocked from './components/icons/LockLocked.vue';
 import IconLockUnlocked from './components/icons/LockUnlocked.vue';
 import IconCheck from './components/icons/Check.vue';
 import IconEyeCrossed from './components/icons/EyeCrossed.vue';
+import IconPlay from './components/icons/Play.vue';
+import IconPause from './components/icons/Pause.vue';
 
 /* possible values: 'notstarted, 'waiting' 'users got' 'signin ready' 'signin process' 'signedin' */
 const appstatus = ref('notstarted');
 const signerror = ref(null);
 const timezone = 'Asia/Nicosia';
+const videoplay = ref(false);
 
 /* + datalog */
 import { u8aToString } from "@polkadot/util";
@@ -327,6 +340,26 @@ const start = async () => {
     });
 
 }
+
+const contolvideo = () => {
+  var video = document.getElementById('video');
+    
+  if(videoplay.value) {
+    video.pause();
+    videoplay.value = false;
+  } else {
+    video.play();
+    videoplay.value = true;
+  }
+}
+
+onMounted( () => {
+  document.addEventListener('contextmenu', e => {
+    if(e.target.nodeName === 'VIDEO') {
+      e.preventDefault();
+    }
+  });
+})
 </script>
 
 <style scoped>
@@ -575,6 +608,20 @@ const start = async () => {
   video {
     max-width: 800px;
     width: 100%;
+  }
+
+  .videocontainer {
+    position: relative;
+    display: inline-block;
+  }
+
+  .videocontrol {
+    position: absolute;
+    display: block;
+    width: 2rem;
+    right: 2rem;
+    bottom: 2rem;
+    z-index: 10;
   }
 
   .boxactions video:not(:last-child) {
