@@ -5,8 +5,8 @@
           <img class="appicon" src="./assets/images/robotdark.png" aria-hidden="true" />
           <div v-if="sessionstatus">
             <template v-if="sessionstatus === 'registration'">Registration started</template>
-            <template v-if="sessionstatus === 'robotworks'">Robot is working</template>
-            <template v-if="sessionstatus === 'game' && sessionstarttime">Hunt started at {{sessionstarttime}}</template>
+            <template v-if="sessionstatus === 'robotworks'">Robot is exploring</template>
+            <template v-if="sessionstatus === 'game' && sessionstarttime">Started at {{sessionstarttime}}</template>
           </div>
         </div>
 
