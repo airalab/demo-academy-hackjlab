@@ -3,7 +3,11 @@
     <header>
         <div>
           <img class="appicon" src="./assets/images/robotdark.png" aria-hidden="true" />
-          <div v-if="sessionactive" class="session">Now active: {{sessionactive}}</div>
+          <div v-if="sessionstatus">
+            <template v-if="sessionstatus === 'registration'">Registration started</template>
+            <template v-if="sessionstatus === 'robotworks'">Robot is working</template>
+            <template v-if="sessionstatus === 'game' && sessionstarttime">Hunt started at {{sessionstarttime}}</template>
+          </div>
         </div>
 
         <div>
@@ -93,15 +97,6 @@
 
                   <div class="window-content">
                     <img src="./assets/images/map-2.png" class="mapimg" alt="Room plan of the Johnny's laboratory" />
-                    <!-- <div class="map">
-                      <img src="./assets/images/map.png" class="mapimg" alt="Room plan of the Johnny's laboratory" />
-                      <template v-if="points?.length > 0">
-                        <div 
-                        v-for="(p,i) in points" :key="i" 
-                        :style="'--x:' + p.x +'px; --y:' + p.y + 'px;'"  
-                        class="mappoint">{{i + 1}}</div>
-                      </template>
-                    </div> -->
                   </div>
                   
                 </div>
@@ -169,12 +164,12 @@ import Loader from './components/icons/Loader.vue';
 import IconLockLocked from './components/icons/LockLocked.vue';
 import IconLockUnlocked from './components/icons/LockUnlocked.vue';
 import IconCheck from './components/icons/Check.vue';
-import IconRobot from './components/icons/Robot.vue';
 import IconEyeCrossed from './components/icons/EyeCrossed.vue';
 
 /* possible values: 'notstarted, 'waiting' 'users got' 'signin ready' 'signin process' 'signedin' */
 const appstatus = ref('notstarted');
 const signerror = ref(null);
+const timezone = 'Asia/Nicosia';
 
 /* + datalog */
 import { u8aToString } from "@polkadot/util";
@@ -196,7 +191,6 @@ const users = ref([]);
 const user = ref(null);
 const datavideo = ref(null);
 const datalog = ref(null);
-// const points = ref([]);
 const words = ref([]);
 /* - datalog */
 
@@ -204,50 +198,43 @@ const words = ref([]);
 const userpassword = ref(null);
 const typepassword = ref('password');
 
-// const checkmnemonic = computed( () => {
-//   // проверка на пустоту и кол-во слов
-//   return userpassword.value && userpassword.value.trim().split(/\s+/).length === 12;
-// });
-
 const togpassword = () => {
   (typepassword.value === 'password') ? typepassword.value = 'text' : typepassword.value = 'password';
 }
 /* - mnemonic */
 
-// const getpoints = () => {
+const sessionstatus = computed( () => {
+  /* possible values: 'registration', 'robotworks', 'game' */
+  const hours = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, hour: '2-digit', hour12: false }));
 
-//   const resolution = 0.01;
-//   const origin = [-3.01, -1.17];
-//   const mapheight = 378;
+  if( (hours >= 10 && hours < 11) || (hours >= 20 && hours < 21)) {
+    return 'registration';
+  }
 
-//   let startpoint = [(-1 * origin[0])/resolution, -1 * mapheight - origin[1] / resolution];
-//   points.value = [];
+  if( (hours >= 11 && hours < 12) || (hours >= 21 && hours < 22)) {
+    const min = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, minute: '2-digit', hour12: false }));
+    if( min < 15 ) {
+      return 'robotworks';
+    }
+  }
 
-//   datalog.value.points.forEach( i => {
-//     console.log('point', i)
-//     points.value.push({
-//       x: Math.abs(startpoint[0] + i[0] / resolution),
-//       y: Math.abs(-1 * (startpoint[1] + i[1] / resolution))
-//     });
-//   });
+  return 'game';
 
-//   console.log('points.value', points.value)
-// }
+})
 
-const sessionactive = computed( () => {
+const sessionstarttime = computed( () => {
   const now = new Date(Date.now()).getHours();
 
-  if(now >= 11 && now < 21) {
-      const today = new Date(Date.now()).toLocaleDateString();
-      return 'Day session ' + today;
+  if(now >= 10 && now < 20) {
+    return new Date(Date.now()).toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 10:00 UTC+3';
   } else {
-      let session = new Date();
-      if(now > 21) {
-        session.setDate(new Date().getDate() + 1);
-      }
-      return 'Night session ' + session.toLocaleDateString();
+    const day = new Date();
+    if(now < 20) {
+      day.setDate(new Date().getDate() - 1);
+    }
+    return day.toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 20:00 UTC+3';
   }
-});
+})
 
 const shortaddress = address => {
   const addressArray = address.split('')
@@ -284,7 +271,6 @@ const signin = () => {
     datalog.value = JSON.parse(jsonrepair(u8aToString(unzipped["data.json"])));
 
     if(datalog.value) {
-      // getpoints();
       words.value = datalog.value.words
     }
 
@@ -342,20 +328,6 @@ const start = async () => {
     });
 
 }
-
-onMounted( () => {
-  document.body.onclick = (e) => {
-
-      const current = e.target.closest('.mappoint[tabindex="0"]'); //save clicked element to detect if it is our current detail
-      document.body.querySelectorAll('.mappoint[tabindex="0"]')
-          .forEach((e) => {
-              if(e !== current){ //we need this condition not to break details behavior
-                e.open = false
-              }
-      })
-  }
-
-})
 </script>
 
 <style scoped>
