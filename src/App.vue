@@ -11,8 +11,7 @@
         </div>
 
         <div>
-          <base target="_blank">
-          <a class="discord" href="https://discord.com/channels/803947358492557312/1245395009964871772" target="_blank">Discord <span class="hidetext">bot assistant</span></a>
+          <a class="discord" href="https://discord.com/channels/803947358492557312/1245395009964871772" target="_parent">Discord <span class="hidetext">bot assistant</span></a>
         </div>
     </header>
 
