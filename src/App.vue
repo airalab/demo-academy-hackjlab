@@ -8,6 +8,7 @@
             <template v-if="sessionstatus === 'robotworks'">Robot is exploring</template>
             <template v-if="sessionstatus === 'game' && sessionstarttime">Started at {{sessionstarttime}}</template>
           </div>
+          <Loader v-else class="dark" />
         </div>
 
         <div>
@@ -16,7 +17,6 @@
     </header>
 
     <div class="inside">
-
           <template v-if="appstatus === 'notstarted'">
             <a v-if="sessionstatus === 'game'" href="javascript:;" class="button" @click.prevent="start">Start</a>
             <p v-if="sessionstatus === 'registration'">Register your Polkadot address (this should be in ED25519 format) in Discord bot: https://discord.com/channels/803947358492557312/1245395009964871772</p>
@@ -42,6 +42,7 @@
                 <template v-if="appstatus === 'signin ready' || appstatus === 'signin process'">
 
                     <template v-if="!users || users?.length === 0">
+                     
                       <div class="flexline">
                         <Loader />
                         <div class="typeanimated typeanimated-2">Add your address in the Discord bot</div>
@@ -56,7 +57,7 @@
                       </div>
                     </template>
 
-                    <template v-if="appstatus !== 'signedin' && users && users?.length > 0">
+                    <template v-if="appstatus !== 'signedin' && users && users.length > 0">
                       <div class="flexline">
                         <Loader />
                         <div class="typeanimated typeanimated-3">Decrypt with your user:</div>
@@ -139,8 +140,8 @@
                         <source :src="datavideo" type="video/mp4"/>
                       </video>
                       <a href="javascript:;" class="videocontrol" @click.prevent="contolvideo">
-                        <IconPlay v-if="videoplay" />
-                        <IconPause v-else />
+                        <IconPause v-if="videoplay" />
+                        <IconPlay v-else />
                       </a>
                     </div>
 
@@ -182,6 +183,7 @@ const appstatus = ref('notstarted');
 const signerror = ref(null);
 const timezone = 'Asia/Nicosia';
 const videoplay = ref(false);
+const sessionstatus = ref(null);
 
 /* + datalog */
 import { u8aToString } from "@polkadot/util";
@@ -189,12 +191,13 @@ import { encodeAddress } from "@polkadot/util-crypto";
 import { jsonrepair } from "jsonrepair";
 import { useDevices } from "./robonomics-interface/useDevices";
 import { createPair, encryptor } from "./robonomics-interface/encryptor";
-import { decryptMsg, getData } from "./robonomics-interface/tools";
+import { decryptMsg, getData, getLastDatalog } from "./robonomics-interface/tools";
 import { unzipSync } from 'fflate';
 
 const owner = "4HZdAcNcj85cpCNtDD5W9BwqhCTqz8heboS71WimdK1miq1h";
 const controller = "4HfUX9Ex5KJZNf3ozDCSDwTY4xJ2zSt1zr15PrWuv6M4Z56z";
 const RobonomicsProvider = inject("RobonomicsProvider");
+const RobonomicsReady = ref(false);
 const devices = useDevices(owner);
 const jsonData = ref();
 const gateway = "https://johnny_lab.mypinata.cloud/ipfs/";
@@ -215,7 +218,8 @@ const togpassword = () => {
 }
 /* - mnemonic */
 
-const sessionstatus = computed( () => {
+const getsessionstatus = (datalogtime) => {
+
   /* possible values: 'registration', 'robotworks', 'game' */
   const hours = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, hour: '2-digit', hour12: false }));
 
@@ -224,15 +228,21 @@ const sessionstatus = computed( () => {
   }
 
   if( (hours >= 11 && hours < 12) || (hours >= 21 && hours < 22)) {
-    const min = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, minute: '2-digit', hour12: false }));
-    if( min < 15 ) {
+    const daynow = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, day: '2-digit' }));
+    const daydatalog = parseInt(new Date(Date.now(datalogtime)).toLocaleString('en-US', { timeZone: timezone, day: '2-digit' }));
+    const dataloghour = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, hour: '2-digit', hour12: false }));
+
+    /* проверяем свежесть даталога */
+    if( (daynow === daydatalog) && (dataloghour >= 11 || dataloghour >=21) ) {
+      return 'game';
+    } else {
       return 'robotworks';
     }
   }
 
   return 'game';
 
-})
+}
 
 const sessionstarttime = computed( () => {
   const now = new Date(Date.now()).getHours();
@@ -300,44 +310,24 @@ const start = async () => {
 
     appstatus.value = 'waiting';
 
-    const isOnce = RobonomicsProvider.isReady.value;
+    if(RobonomicsReady.value) {
 
-    watch(
-      RobonomicsProvider.isReady,
-      async (isReady, _, stopWatch) => {
-        if (isReady) {
-          if (!isOnce) {
-            stopWatch();
-          }
-    
-          devices.loadDevices();
-          try {
-            
-            jsonData.value = await getData(
-              RobonomicsProvider.instance.value,
-              controller,
-              gateway
-            );
+      devices.loadDevices();
 
-            if (jsonData.value) {
-              appstatus.value = 'signin ready';
-            }
-          } catch (error) {
-            console.log(error);
-          }
+      try {  
+        jsonData.value = await getData(
+          RobonomicsProvider.instance.value,
+          controller,
+          gateway
+        );
+
+        if (jsonData.value) {
+          appstatus.value = 'signin ready';
         }
-      },
-      { immediate: true, once: isOnce }
-    );
-
-    watch(devices.devices, u => {
-      appstatus.value = 'users got';
-      users.value = u;
-
-      if (u.length > 0) {
-        user.value = u[0];
+      } catch (error) {
+        console.log(error);
       }
-    });
+    }
 
 }
 
@@ -353,12 +343,50 @@ const contolvideo = () => {
   }
 }
 
-onMounted( () => {
+onMounted( async () => {
+
   document.addEventListener('contextmenu', e => {
     if(e.target.nodeName === 'VIDEO') {
       e.preventDefault();
     }
   });
+
+
+  RobonomicsReady.value = RobonomicsProvider.isReady.value;
+  watch(
+      RobonomicsProvider.isReady,
+      async (isReady, _, stopWatch) => {
+        if (isReady) {
+          if (!RobonomicsReady.value) {
+            stopWatch();
+          }
+
+          RobonomicsReady.value = true;
+          const d = await getLastDatalog(RobonomicsProvider.instance.value, controller);
+          sessionstatus.value = getsessionstatus(d.timestamp);
+        }
+      },
+      { immediate: true, once: RobonomicsReady.value }
+    );
+
+    watch(devices.devices, v => {
+      if(v) {
+        appstatus.value = 'users got';
+        users.value = v;
+
+        if (v.length > 0) {
+          user.value = v[0];
+        }
+      }
+    });
+
+    /* обновляем статус каждый час и проверяем дату даталога */
+    setInterval( async () => {
+      if(RobonomicsReady.value) {
+        const d = await getLastDatalog(RobonomicsProvider.instance.value, controller);
+        sessionstatus.value = getsessionstatus(d.timestamp);
+      }
+    }, 1000 * 60 * 60);
 })
 </script>
 
