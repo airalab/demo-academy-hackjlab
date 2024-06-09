@@ -231,7 +231,7 @@ const getsessionstatus = (datalogtime) => {
     const daynow = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, day: '2-digit' }));
     const daydatalog = parseInt(new Date(Date.now(datalogtime)).toLocaleString('en-US', { timeZone: timezone, day: '2-digit' }));
     const dataloghour = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, hour: '2-digit', hour12: false }));
-    console.log('daydatalog', daydatalog)
+    console.log('daydatalog', daydatalog, dataloghour)
 
     /* проверяем свежесть даталога */
     if( (daynow === daydatalog) && (dataloghour >= 11 || dataloghour >=21) ) {
