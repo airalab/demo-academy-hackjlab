@@ -164,7 +164,7 @@
                     <p class="textsmall">Look at the video and re-order words according to numbers.</p>
 
                     <div class="videocontainer" v-if="datavideo">
-                      <video ref="evideo" muted playsinline>
+                      <video ref="evideo" muted playsinline preload="auto">
                         <source :src="datavideo" type="video/mp4"/>
                       </video>
                       <a href="javascript:;" class="videocontrol" @click.prevent="contolvideo">
@@ -238,7 +238,7 @@ const datavideo = ref(null);
 const datalog = ref(null);
 const words = ref([]);
 const datalogtime = ref(null);
-let unsubscribe = null;
+// let unsubscribe = null;
 /* - datalog */
 
 /* + mnemonic */
@@ -271,25 +271,6 @@ const nextsession = computed( () => {
   }
 })
 
-// const sessionstatus = computed( () => {
-//   /* possible values: 'registration', 'robotworks', 'game' */
-//   const hours = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, hour: '2-digit', hour12: false }));
-
-//   if( (hours >= 10 && hours < 11) || (hours >= 20 && hours < 21)) {
-//     return 'registration';
-//   }
-
-//   if( (hours >= 11 && hours < 12) || (hours >= 21 && hours < 22)) {
-//     const min = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, minute: '2-digit', hour12: false }));
-//     if( min < 20 ) {
-//       return 'robotworks';
-//     }
-//   }
-
-//   return 'game';
-
-// })
-
 const nowsession = computed( () => {
   const now = new Date(Date.now()).getHours();
 
@@ -310,7 +291,7 @@ const shortaddress = address => {
   return result.replace(/,/g, '')
 }
 
-const signin = () => {
+const signin = async () => {
   appstatus.value = 'signin process';
   signerror.value = null;
   let pair = null;
@@ -392,7 +373,6 @@ const contolvideo = () => {
 }
 
 const getdatalogtime = async () => {
-  console.log('getdatalogtime fired');
   const d = await getLastDatalog(RobonomicsProvider.instance.value, controller);
   if(d?.timestamp) {
     datalogtime.value = new Date(d.timestamp).toLocaleString('en-US', { timeZone: timezone, dateStyle: 'medium', timeStyle: 'long', hour12: false});
@@ -410,14 +390,14 @@ onMounted( async () => {
 
         RobonomicsReady.value = true;
 
-        unsubscribe = await RobonomicsProvider.instance.value.datalog.on({}, result => {
-          for (const item of result) {
-            if (item.data[0].toHuman() === controller) {
-              const timestamp = item.data[1].toNumber();
-              console.log(timestamp);
-            }
-          }
-        });
+        // unsubscribe = await RobonomicsProvider.instance.value.datalog.on({}, result => {
+        //   for (const item of result) {
+        //     if (item.data[0].toHuman() === controller) {
+        //       const timestamp = item.data[1].toNumber();
+        //       console.log(timestamp);
+        //     }
+        //   }
+        // });
 
         getdatalogtime();
       }
@@ -436,15 +416,6 @@ onMounted( async () => {
     }
   });
 
-  // setInterval( async () => {
-  //   console.log('RobonomicsReady.value')
-  //   if(RobonomicsReady.value) {
-  //     const d = await getLastDatalog(RobonomicsProvider.instance.value, controller);
-  //     datalogtime.value = new Date(d.timestamp).toLocaleString();
-  //   }
-  // }, 1000);
-
-
   document.addEventListener('contextmenu', e => {
     if(e.target.nodeName === 'VIDEO') {
       e.preventDefault();
@@ -453,19 +424,19 @@ onMounted( async () => {
 
   watch(evideo, v => {
     if(v) {
-      v.onloadeddata = () => {
-        URL.revokeObjectURL(datavideo.value);
-      }
+      v.addEventListener("onload", (e) => {
+        (window.URL || window.webkitURL).revokeObjectURL(datavideo.value);
+      }, false);
     }
   });
 
 })
 
-onUnmounted( () => {
-  if(unsubscribe){
-    unsubscribe();
-  }
-})
+// onUnmounted( () => {
+//   if(unsubscribe){
+//     unsubscribe();
+//   }
+// })
 
 </script>
 
