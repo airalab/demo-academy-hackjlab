@@ -97,7 +97,7 @@
                   <h2 class="window-title">Map of the room</h2>
 
                   <div class="window-content">
-                    <img src="./assets/images/map-2.png" class="mapimg" alt="Room plan of the Johnny's laboratory" />
+                    <img src="./assets/images/Map-3.png" class="mapimg" alt="Room plan of the Johnny's laboratory" />
                   </div>
                   
                 </div>
@@ -135,7 +135,7 @@
                     <p class="textsmall">Look at the video and re-order words according to numbers.</p>
 
                     <div class="videocontainer" v-if="datavideo">
-                      <video muted ref="evideo">
+                      <video ref="evideo" muted playsinline>
                         <source :src="datavideo" type="video/mp4"/>
                       </video>
                       <a href="javascript:;" class="videocontrol" @click.prevent="contolvideo">
@@ -370,7 +370,7 @@ onMounted( async () => {
         URL.revokeObjectURL(datavideo.value);
       }
     }
-  })
+  });
 
 
   // watch(datavideo, value => {
