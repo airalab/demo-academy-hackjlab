@@ -3,11 +3,6 @@
     <header>
         <div>
           <img class="appicon" src="./assets/images/robotdark.png" aria-hidden="true" />
-          <div v-if="sessionstatus">
-            <template v-if="sessionstatus === 'registration'">Registration started</template>
-            <template v-if="sessionstatus === 'robotworks'">Robot is exploring</template>
-            <template v-if="sessionstatus === 'game' && sessionstarttime">Started at {{sessionstarttime}}</template>
-          </div>
         </div>
 
         <div>
@@ -17,11 +12,26 @@
 
     <div class="inside">
 
-          <template v-if="appstatus === 'notstarted'">
-            <a v-if="sessionstatus === 'game'" href="javascript:;" class="button" @click.prevent="start">Start</a>
-            <p v-if="sessionstatus === 'registration'">Register your Polkadot address (this should be in ED25519 format) in Discord bot: https://discord.com/channels/803947358492557312/1245395009964871772</p>
-            <p v-if="sessionstatus === 'robotworks'">Wait for robot. He usually is exploring Johnny's lab within 15 minutes.</p>
+      <template v-if="appstatus === 'notstarted'">
+        <section v-if="nowsession || nextsession">
+          <p v-if="nowsession">Current session started on: {{nowsession}}</p>
+          <p v-if="nextsession">Next session shedulled on: {{nextsession}}</p>
+        </section>
+
+        <section>Latest datalog from the robot uploaded: 
+          <template v-if="datalogtime">
+            {{datalogtime}}
+
+            <a @click.prevent="getdatalogtime" href="javascript:;" aria-label="Get time for last datalog" class="datalogrenew"><IconRenew /></a>
           </template>
+
+          <template v-else><Loader /></template>
+        </section>
+        <a href="javascript:;" class="button" @click.prevent="start">
+          <template v-if="datalogtime">Get datalog</template>
+          <template v-else>Start</template>
+        </a>
+      </template>
 
           <template v-if="appstatus !== 'notstarted'">
         
@@ -93,6 +103,25 @@
             <div class="boxactions" v-if="appstatus === 'signedin' && datalog && datavideo">
 
               <div>
+                <section class="window" v-if="nowsession || nextsession || datalogtime">
+                  <h2 class="window-title">Session info</h2>
+                  <div class="window-content textsmall">
+                    <section v-if="nowsession || nextsession">
+                      <p v-if="nowsession">Current session started on: {{nowsession}}</p>
+                      <p v-if="nextsession">Next session shedulled on: {{nextsession}}</p>
+                    </section>
+
+                    <section>
+                      Latest datalog from the robot uploaded: 
+                      <template v-if="datalogtime">
+                        {{datalogtime}}
+
+                        <a @click.prevent="getdatalogtime" href="javascript:;" aria-label="Get time for last datalog" class="datalogrenew"><IconRenew /></a>
+                      </template>
+                    </section>
+                  </div>
+                </section>
+
                 <div class="window">
                   <h2 class="window-title">Map of the room</h2>
 
@@ -168,7 +197,7 @@
 </template>
 
 <script setup>
-import { computed, inject, ref, watch, onMounted } from 'vue';
+import { computed, inject, ref, watch, onMounted, onUnmounted } from 'vue';
 
 import Loader from './components/icons/Loader.vue';
 import IconLockLocked from './components/icons/LockLocked.vue';
@@ -177,6 +206,7 @@ import IconCheck from './components/icons/Check.vue';
 import IconEyeCrossed from './components/icons/EyeCrossed.vue';
 import IconPlay from './components/icons/Play.vue';
 import IconPause from './components/icons/Pause.vue';
+import IconRenew from './components/icons/Renew.vue';
 
 /* possible values: 'notstarted, 'waiting' 'users got' 'signin ready' 'signin process' 'signedin' */
 const appstatus = ref('notstarted');
@@ -191,12 +221,13 @@ import { encodeAddress } from "@polkadot/util-crypto";
 import { jsonrepair } from "jsonrepair";
 import { useDevices } from "./robonomics-interface/useDevices";
 import { createPair, encryptor } from "./robonomics-interface/encryptor";
-import { decryptMsg, getData } from "./robonomics-interface/tools";
+import { decryptMsg, getData, getLastDatalog } from "./robonomics-interface/tools";
 import { unzipSync } from 'fflate';
 
 const owner = "4HZdAcNcj85cpCNtDD5W9BwqhCTqz8heboS71WimdK1miq1h";
 const controller = "4HfUX9Ex5KJZNf3ozDCSDwTY4xJ2zSt1zr15PrWuv6M4Z56z";
 const RobonomicsProvider = inject("RobonomicsProvider");
+const RobonomicsReady = ref(false);
 const devices = useDevices(owner);
 const jsonData = ref();
 const gateway = "https://johnny_lab.mypinata.cloud/ipfs/";
@@ -206,6 +237,8 @@ const user = ref(null);
 const datavideo = ref(null);
 const datalog = ref(null);
 const words = ref([]);
+const datalogtime = ref(null);
+let unsubscribe = null;
 /* - datalog */
 
 /* + mnemonic */
@@ -217,26 +250,47 @@ const togpassword = () => {
 }
 /* - mnemonic */
 
-const sessionstatus = computed( () => {
-  /* possible values: 'registration', 'robotworks', 'game' */
-  const hours = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, hour: '2-digit', hour12: false }));
+const nextsession = computed( () => {
+  const nowday = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, day: '2-digit' }));
+  const nowhour = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, hour: '2-digit', hour12: false }));
 
-  if( (hours >= 10 && hours < 11) || (hours >= 20 && hours < 21)) {
-    return 'registration';
-  }
+  if(nowday < 17 && nowhour < 20 ) {
+    if(nowhour >= 10 && nowhour < 20) {
+      return new Date(Date.now()).toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 20:00 UTC+3';
+    } else {
+      const day = new Date();
 
-  if( (hours >= 11 && hours < 12) || (hours >= 21 && hours < 22)) {
-    const min = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, minute: '2-digit', hour12: false }));
-    if( min < 20 ) {
-      return 'robotworks';
+      if(nowhour > 20) {
+        day.setDate(new Date().getDate() + 1);
+      }
+
+      return day.toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 10:00 UTC+3';
     }
+  } else {
+    return null;
   }
-
-  return 'game';
-
 })
 
-const sessionstarttime = computed( () => {
+// const sessionstatus = computed( () => {
+//   /* possible values: 'registration', 'robotworks', 'game' */
+//   const hours = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, hour: '2-digit', hour12: false }));
+
+//   if( (hours >= 10 && hours < 11) || (hours >= 20 && hours < 21)) {
+//     return 'registration';
+//   }
+
+//   if( (hours >= 11 && hours < 12) || (hours >= 21 && hours < 22)) {
+//     const min = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, minute: '2-digit', hour12: false }));
+//     if( min < 20 ) {
+//       return 'robotworks';
+//     }
+//   }
+
+//   return 'game';
+
+// })
+
+const nowsession = computed( () => {
   const now = new Date(Date.now()).getHours();
 
   if(now >= 10 && now < 20) {
@@ -300,47 +354,26 @@ const signin = () => {
 
 const start = async () => {
 
-    appstatus.value = 'waiting';
+  appstatus.value = 'waiting';
 
-    const isOnce = RobonomicsProvider.isReady.value;
+  if(RobonomicsReady.value) {
 
-    watch(
-      RobonomicsProvider.isReady,
-      async (isReady, _, stopWatch) => {
-        if (isReady) {
-          if (!isOnce) {
-            stopWatch();
-          }
-    
-          devices.loadDevices();
-          try {
-            
-            jsonData.value = await getData(
-              RobonomicsProvider.instance.value,
-              controller,
-              gateway
-            );
+    devices.loadDevices();
 
-            if (jsonData.value) {
-              appstatus.value = 'signin ready';
-            }
-            
-          } catch (error) {
-            console.log(error);
-          }
-        }
-      },
-      { immediate: true, once: isOnce }
-    );
+    try {  
+      jsonData.value = await getData(
+        RobonomicsProvider.instance.value,
+        controller,
+        gateway
+      );
 
-    watch(devices.devices, u => {
-      appstatus.value = 'users got';
-      users.value = u;
-
-      if (u.length > 0) {
-        user.value = u[0];
+      if (jsonData.value) {
+        appstatus.value = 'signin ready';
       }
-    });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
 }
 
@@ -358,7 +391,60 @@ const contolvideo = () => {
   }
 }
 
+const getdatalogtime = async () => {
+  console.log('getdatalogtime fired');
+  const d = await getLastDatalog(RobonomicsProvider.instance.value, controller);
+  if(d?.timestamp) {
+    datalogtime.value = new Date(d.timestamp).toLocaleString();
+  }
+}
+
 onMounted( async () => {
+  watch(
+    RobonomicsProvider.isReady,
+    async (isReady, _, stopWatch) => {
+      if (isReady) {
+        if (!RobonomicsReady.value) {
+          stopWatch();
+        }
+
+        RobonomicsReady.value = true;
+
+        unsubscribe = await RobonomicsProvider.instance.value.datalog.on({}, result => {
+          for (const item of result) {
+            if (item.data[0].toHuman() === controller) {
+              const timestamp = item.data[1].toNumber();
+              console.log(timestamp);
+            }
+          }
+        });
+
+        getdatalogtime();
+      }
+    },
+    { immediate: true, once: RobonomicsReady.value }
+  );
+
+  watch(devices.devices, v => {
+    if(v) {
+      appstatus.value = 'users got';
+      users.value = v;
+
+      if (v.length > 0) {
+        user.value = v[0];
+      }
+    }
+  });
+
+  // setInterval( async () => {
+  //   console.log('RobonomicsReady.value')
+  //   if(RobonomicsReady.value) {
+  //     const d = await getLastDatalog(RobonomicsProvider.instance.value, controller);
+  //     datalogtime.value = new Date(d.timestamp).toLocaleString();
+  //   }
+  // }, 1000);
+
+
   document.addEventListener('contextmenu', e => {
     if(e.target.nodeName === 'VIDEO') {
       e.preventDefault();
@@ -373,6 +459,12 @@ onMounted( async () => {
     }
   });
 
+})
+
+onUnmounted( () => {
+  if(unsubscribe){
+    unsubscribe();
+  }
 })
 
 </script>
@@ -802,4 +894,23 @@ onMounted( async () => {
   @media screen and (max-width: 700px) {
     .hidetext { display: none; }
   }
+
+  .datalogrenew svg {
+    width: 20px;
+  }
+
+  .datalogrenew:active svg {
+    transition: transform 0.2s linear;
+    transform: rotate(360deg);
+  }
+</style>
+
+<style>
+.datalogrenew svg path {
+  fill: var(--color-green);
+}
+
+.datalogrenew:active svg path {
+    fill: var(--color-yellow);
+}
 </style>
