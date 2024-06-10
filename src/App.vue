@@ -14,13 +14,13 @@
 
       <template v-if="appstatus === 'notstarted'">
         <section v-if="nowsession || nextsession">
-          <p v-if="nowsession">Current session started on: {{nowsession}}</p>
-          <p v-if="nextsession">Next session shedulled on: {{nextsession}}</p>
+          <p v-if="nowsession">Current session started on: <span class="textwhite">{{nowsession}}</span></p>
+          <p v-if="nextsession">Next session shedulled on: <span class="textwhite">{{nextsession}}</span></p>
         </section>
 
         <section>Latest datalog from the robot uploaded: 
           <template v-if="datalogtime">
-            {{datalogtime}}
+            <span class="textwhite">{{datalogtime}}</span>
 
             <a @click.prevent="getdatalogtime" href="javascript:;" aria-label="Get time for last datalog" class="datalogrenew"><IconRenew /></a>
           </template>
@@ -107,14 +107,14 @@
                   <h2 class="window-title">Session info</h2>
                   <div class="window-content textsmall">
                     <section v-if="nowsession || nextsession">
-                      <p v-if="nowsession">Current session started on: {{nowsession}}</p>
-                      <p v-if="nextsession">Next session shedulled on: {{nextsession}}</p>
+                      <p v-if="nowsession">Current session started on: <span class="textwhite">{{nowsession}}</span></p>
+                      <p v-if="nextsession">Next session shedulled on: <span class="textwhite">{{nextsession}}</span></p>
                     </section>
 
                     <section>
                       Latest datalog from the robot uploaded: 
                       <template v-if="datalogtime">
-                        {{datalogtime}}
+                        <span class="textwhite">{{datalogtime}}</span>
 
                         <a @click.prevent="getdatalogtime" href="javascript:;" aria-label="Get time for last datalog" class="datalogrenew"><IconRenew /></a>
                       </template>
@@ -256,7 +256,7 @@ const nextsession = computed( () => {
 
   if(nowday < 17 && nowhour < 20 ) {
     if(nowhour >= 10 && nowhour < 20) {
-      return new Date(Date.now()).toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 20:00 UTC+3';
+      return new Date(Date.now()).toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 20:00 GMT+3';
     } else {
       const day = new Date();
 
@@ -264,7 +264,7 @@ const nextsession = computed( () => {
         day.setDate(new Date().getDate() + 1);
       }
 
-      return day.toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 10:00 UTC+3';
+      return day.toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 10:00 GMT+3';
     }
   } else {
     return null;
@@ -294,13 +294,13 @@ const nowsession = computed( () => {
   const now = new Date(Date.now()).getHours();
 
   if(now >= 10 && now < 20) {
-    return new Date(Date.now()).toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 10:00 UTC+3';
+    return new Date(Date.now()).toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 10:00 GMT+3';
   } else {
     const day = new Date();
     if(now < 20) {
       day.setDate(new Date().getDate() - 1);
     }
-    return day.toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 20:00 UTC+3';
+    return day.toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 20:00 GMT+3';
   }
 })
 
@@ -395,7 +395,7 @@ const getdatalogtime = async () => {
   console.log('getdatalogtime fired');
   const d = await getLastDatalog(RobonomicsProvider.instance.value, controller);
   if(d?.timestamp) {
-    datalogtime.value = new Date(d.timestamp).toLocaleString();
+    datalogtime.value = new Date(d.timestamp).toLocaleString('en-US', { timeZone: timezone, dateStyle: 'medium', timeStyle: 'long', hour12: false});
   }
 }
 
@@ -569,6 +569,10 @@ onUnmounted( () => {
   .textsmall {
     font-size: 0.8em;
     max-width: 600px;
+  }
+
+  .textwhite {
+    color: #fff;
   }
 
   section { margin: 2rem 0; }
@@ -893,6 +897,10 @@ onUnmounted( () => {
 
   @media screen and (max-width: 700px) {
     .hidetext { display: none; }
+  }
+  
+  .datalogrenew {
+    margin-left: 1rem;
   }
 
   .datalogrenew svg {
