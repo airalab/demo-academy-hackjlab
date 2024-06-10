@@ -324,6 +324,7 @@ const start = async () => {
             if (jsonData.value) {
               appstatus.value = 'signin ready';
             }
+            
           } catch (error) {
             console.log(error);
           }
@@ -371,16 +372,6 @@ onMounted( async () => {
       }
     }
   });
-
-
-  // watch(datavideo, value => {
-  //   if(value) {
-  //     setTimeout( () => {
-  //       URL.revokeObjectURL(value);
-  //     }, 1)
-      
-  //   }
-  // })
 
 })
 
