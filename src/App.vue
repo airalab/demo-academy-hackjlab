@@ -135,12 +135,13 @@
                     <p class="textsmall">Look at the video and re-order words according to numbers.</p>
 
                     <div class="videocontainer" v-if="datavideo">
-                      <video muted id="video">
+                      <video muted id="video" controlsList="nodownload">
                         <source :src="datavideo" type="video/mp4"/>
                       </video>
                       <a href="javascript:;" class="videocontrol" @click.prevent="contolvideo">
-                        <IconPlay v-if="videoplay" />
-                        <IconPause v-else />
+                        <IconPause v-if="videoplay" />
+                        <IconPlay v-else />
+                        
                       </a>
                     </div>
 
@@ -353,13 +354,24 @@ const contolvideo = () => {
   }
 }
 
-onMounted( () => {
+onMounted( async () => {
   document.addEventListener('contextmenu', e => {
     if(e.target.nodeName === 'VIDEO') {
       e.preventDefault();
     }
   });
+
+  watch(datavideo, value => {
+    if(value) {
+      setTimeout( () => {
+        URL.revokeObjectURL(value);
+      }, 1)
+      
+    }
+  })
+
 })
+
 </script>
 
 <style scoped>
