@@ -254,7 +254,7 @@ const nextsession = computed( () => {
   const nowday = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, day: '2-digit' }));
   const nowhour = parseInt(new Date(Date.now()).toLocaleString('en-US', { timeZone: timezone, hour: '2-digit', hour12: false }));
 
-  if(nowday < 17 && nowhour <= 20 ) {
+  if(nowday < 17 || (nowday == 17 && nowhour <= 20)) {
     if(nowhour >= 10 && nowhour < 20) {
       return new Date(Date.now()).toLocaleDateString('en-US', { timeZone: timezone, dateStyle: 'medium'}) + ' 20:00 GMT+3';
     } else {
