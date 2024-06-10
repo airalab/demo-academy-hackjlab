@@ -135,7 +135,7 @@
                     <p class="textsmall">Look at the video and re-order words according to numbers.</p>
 
                     <div class="videocontainer" v-if="datavideo">
-                      <video muted id="video" controlsList="nodownload">
+                      <video muted ref="evideo">
                         <source :src="datavideo" type="video/mp4"/>
                       </video>
                       <a href="javascript:;" class="videocontrol" @click.prevent="contolvideo">
@@ -183,6 +183,7 @@ const appstatus = ref('notstarted');
 const signerror = ref(null);
 const timezone = 'Asia/Nicosia';
 const videoplay = ref(false);
+const evideo = ref(null);
 
 /* + datalog */
 import { u8aToString } from "@polkadot/util";
@@ -343,14 +344,16 @@ const start = async () => {
 }
 
 const contolvideo = () => {
-  var video = document.getElementById('video');
+  // var video = document.getElementById('video');
     
-  if(videoplay.value) {
-    video.pause();
-    videoplay.value = false;
-  } else {
-    video.play();
-    videoplay.value = true;
+  if(evideo.value) {
+    if(videoplay.value) {
+      evideo.value.pause();
+      videoplay.value = false;
+    } else {
+      evideo.value.play();
+      videoplay.value = true;
+    }
   }
 }
 
@@ -361,14 +364,23 @@ onMounted( async () => {
     }
   });
 
-  watch(datavideo, value => {
-    if(value) {
-      setTimeout( () => {
-        URL.revokeObjectURL(value);
-      }, 1)
-      
+  watch(evideo, v => {
+    if(v) {
+      v.onloadeddata = () => {
+        URL.revokeObjectURL(datavideo.value);
+      }
     }
   })
+
+
+  // watch(datavideo, value => {
+  //   if(value) {
+  //     setTimeout( () => {
+  //       URL.revokeObjectURL(value);
+  //     }, 1)
+      
+  //   }
+  // })
 
 })
 
